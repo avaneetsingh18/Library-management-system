@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<!--
+  Library Management System - Frontend
+  Author: Avaneet Singh
+  Stack: HTML5, CSS3, Vanilla JS (ES6 Classes)
+  Backend: Spring Boot (Java) + MySQL
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LibraryOS — Library Management System</title>
+
+    <!-- Font Awesome Icons (CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <!-- ===== SIDEBAR NAVIGATION ===== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fa-solid fa-book-open"></i>
+                <span>LibraryOS</span>
+            </div>
+            <button class="sidebar-close" id="sidebarClose" aria-label="Close menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <i class="fa-solid fa-gauge-high"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="books">
+                <i class="fa-solid fa-book"></i>
+                <span>Books</span>
+            </a>
+            <a href="#" class="nav-item" data-page="members">
+                <i class="fa-solid fa-users"></i>
+                <span>Members</span>
+            </a>
+            <a href="#" class="nav-item" data-page="transactions">
+                <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                <span>Transactions</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">AS</div>
+                <div>
+                    <div class="user-name">Avaneet Singh</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="main-content">
+
+        <!-- Top bar -->
+        <header class="topbar">
+            <button class="hamburger" id="hamburger" aria-label="Open menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="topbar-title" id="pageTitle">Dashboard</div>
+            <div class="topbar-actions">
+                <div class="api-status" id="apiStatus">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Connecting...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- ===== DASHBOARD PAGE ===== -->
+        <section class="page active" id="page-dashboard">
+            <div class="page-header">
+                <h1>Dashboard</h1>
+                <p>Welcome back, Avaneet. Here's your library at a glance.</p>
+            </div>
+
+            <!-- Summary stat cards -->
+            <div class="stats-grid">
+                <div class="stat-card stat-blue">
+                    <div class="stat-icon"><i class="fa-solid fa-book"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-totalBooks">—</div>
+                        <div class="stat-label">Total Books</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-green">
+                    <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-totalMembers">—</div>
+                        <div class="stat-label">Members</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-amber">
+                    <div class="stat-icon"><i class="fa-solid fa-bookmark"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-issuedBooks">—</div>
+                        <div class="stat-label">Books Issued</div>
+                    </div>
+                </div>
+                <div class="stat-card stat-red">
+                    <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-overdueBooks">—</div>
+                        <div class="stat-label">Overdue</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Recent Transactions</h2>
+                    <button class="btn btn-sm btn-outline" onclick="app.navigate('transactions')">
+                        View All <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Member</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboardTransactions">
+                            <tr><td colspan="5" class="empty-state">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== BOOKS PAGE ===== -->
+        <section class="page" id="page-books">
+            <div class="page-header">
+                <h1>Book Catalogue</h1>
+                <button class="btn btn-primary" id="addBookBtn">
+                    <i class="fa-solid fa-plus"></i> Add Book
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-toolbar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="bookSearch" placeholder="Search by title or author..." />
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ISBN</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Genre</th>
+                                <th>Copies</th>
+                                <th>Available</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksTable">
+                            <tr><td colspan="7" class="empty-state">Loading books...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== MEMBERS PAGE ===== -->
+        <section class="page" id="page-members">
+            <div class="page-header">
+                <h1>Members</h1>
+                <button class="btn btn-primary" id="addMemberBtn">
+                    <i class="fa-solid fa-user-plus"></i> Add Member
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-toolbar">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="memberSearch" placeholder="Search by name, ID, or email..." />
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Member ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membersTable">
+                            <tr><td colspan="5" class="empty-state">Loading members...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== TRANSACTIONS PAGE ===== -->
+        <section class="page" id="page-transactions">
+            <div class="page-header">
+                <h1>Transactions</h1>
+                <button class="btn btn-primary" id="issueBookBtn">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i> Issue Book
+                </button>
+            </div>
+
+            <div class="card">
+                <div class="card-toolbar">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="ALL">All</button>
+                        <button class="filter-tab" data-filter="ISSUED">Issued</button>
+                        <button class="filter-tab" data-filter="RETURNED">Returned</button>
+                        <button class="filter-tab" data-filter="OVERDUE">Overdue</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Book</th>
+                                <th>Member</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Fine (₹)</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable">
+                            <tr><td colspan="9" class="empty-state">Loading transactions...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ===== MODALS ===== -->
+
+    <!-- Book Modal -->
+    <div class="modal-overlay" id="bookModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="bookModalTitle">Add New Book</h3>
+                <button class="modal-close" data-modal="bookModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="bookForm" novalidate>
+                    <input type="hidden" id="bookId" />
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bookIsbn">ISBN *</label>
+                            <input type="text" id="bookIsbn" placeholder="978-0134685991" required />
+                            <span class="field-error" id="err-isbn"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookGenre">Genre</label>
+                            <input type="text" id="bookGenre" placeholder="Technology, Fiction..." />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookTitle">Title *</label>
+                        <input type="text" id="bookTitle" placeholder="Book title" required />
+                        <span class="field-error" id="err-title"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookAuthor">Author *</label>
+                        <input type="text" id="bookAuthor" placeholder="Author name" required />
+                        <span class="field-error" id="err-author"></span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bookCopies">Total Copies *</label>
+                            <input type="number" id="bookCopies" min="1" value="1" required />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-modal="bookModal">Cancel</button>
+                <button class="btn btn-primary" id="saveBookBtn">Save Book</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Modal -->
+    <div class="modal-overlay" id="memberModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="memberModalTitle">Add New Member</h3>
+                <button class="modal-close" data-modal="memberModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="memberForm" novalidate>
+                    <input type="hidden" id="memberId" />
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="memberMID">Member ID *</label>
+                            <input type="text" id="memberMID" placeholder="MEM001" required />
+                            <span class="field-error" id="err-mid"></span>
+                        </div>
+                        <div class="form-group">
+                            <label for="memberPhone">Phone</label>
+                            <input type="tel" id="memberPhone" placeholder="9876543210" />
+                            <span class="field-error" id="err-phone"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberName">Full Name *</label>
+                        <input type="text" id="memberName" placeholder="Full name" required />
+                        <span class="field-error" id="err-name"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberEmail">Email *</label>
+                        <input type="email" id="memberEmail" placeholder="email@example.com" required />
+                        <span class="field-error" id="err-email"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberAddress">Address</label>
+                        <textarea id="memberAddress" rows="2" placeholder="City, State"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-modal="memberModal">Cancel</button>
+                <button class="btn btn-primary" id="saveMemberBtn">Save Member</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Book Modal -->
+    <div class="modal-overlay" id="issueModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Issue Book</h3>
+                <button class="modal-close" data-modal="issueModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="issueForm" novalidate>
+                    <div class="form-group">
+                        <label for="issueBookId">Book *</label>
+                        <select id="issueBookId" required>
+                            <option value="">— Select a book —</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="issueMemberId">Member *</label>
+                        <select id="issueMemberId" required>
+                            <option value="">— Select a member —</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="issueDueDate">Due Date *</label>
+                        <input type="date" id="issueDueDate" required />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-modal="issueModal">Cancel</button>
+                <button class="btn btn-primary" id="confirmIssueBtn">
+                    <i class="fa-solid fa-arrow-up-from-bracket"></i> Issue Book
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Delete Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal modal-sm">
+            <div class="modal-header">
+                <h3>Confirm Delete</h3>
+                <button class="modal-close" data-modal="confirmModal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to delete this item?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" data-modal="confirmModal">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
